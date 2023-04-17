@@ -1,0 +1,18 @@
+services:
+  profiles:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    command: npm run start:dev
+    env_file:
+      - .env
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - '3001:3001'
+
+volumes:
+  postgresql_master_data:
+    driver: local
