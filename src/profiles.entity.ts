@@ -26,4 +26,6 @@ export class Profile {
   @Column({ type: 'varchar' })
   email: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  avatar: string;
 }

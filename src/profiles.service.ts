@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { ProfileDto } from './dto/profile.dto';
+import { CreateProfileDto } from './dto/createProfile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from './profiles.entity';
 import { Repository } from 'typeorm';
@@ -7,7 +7,7 @@ import { lastValueFrom } from 'rxjs';
 import { AUTH_SERVICE, USERS_SERVICE } from './constants/services';
 import { ClientProxy } from '@nestjs/microservices';
 import { LoginDto } from './dto/login.dto';
-
+// TODO: Pagination
 @Injectable()
 export class ProfilesService {
   constructor(
@@ -17,7 +17,7 @@ export class ProfilesService {
     @Inject(AUTH_SERVICE) private authClient: ClientProxy,
   ) {}
 
-  async registration(dto: ProfileDto): Promise<Profile> {
+  async registration(dto: CreateProfileDto): Promise<Profile> {
     // Создание учетных данных (User) для профиля
     const userCreateResult = await lastValueFrom(
       this.authClient.send('create_user', { dto }),
@@ -64,7 +64,12 @@ export class ProfilesService {
     return deleteResult.raw[0];
   }
 
-  async updateProfile(id: number, dto: ProfileDto): Promise<Profile> {
+  async updateProfile(
+    id: number,
+    dto: CreateProfileDto,
+    avatar: string,
+  ): Promise<Profile> {
+    console.log(avatar);
     try {
       // Изменение данных профиля
       await this.profileRepository
@@ -74,6 +79,7 @@ export class ProfilesService {
           firstName: dto.firstName,
           lastName: dto.lastName,
           phone: dto.phone,
+          avatar: avatar,
         })
         .where('id = :id', { id })
         .returning('*')
@@ -93,6 +99,7 @@ export class ProfilesService {
         where: { id },
       });
     } catch (e) {
+      throw e;
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
