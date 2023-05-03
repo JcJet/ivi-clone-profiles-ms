@@ -10,7 +10,7 @@ export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
   @MessagePattern('registration')
-  async registration(@Payload() data: { dto: CreateProfileDto }): Promise<Profile> {
+  async registration(@Payload() data: { dto: CreateProfileDto }) {
     return await this.profilesService.registration(data.dto);
   }
 
@@ -19,6 +19,19 @@ export class ProfilesController {
     return await this.profilesService.login(data.dto);
   }
 
+  @MessagePattern('logout')
+  async logout(@Payload() data: { refreshToken: string }) {
+    return await this.profilesService.logout(data.refreshToken);
+  }
+  @MessagePattern('refresh')
+  async refresh(@Payload() data: { refreshToken: string }) {
+    return await this.profilesService.refresh(data.refreshToken);
+  }
+
+  @MessagePattern('activate')
+  async activate(@Payload() data: { activationLink: string }) {
+    return await this.profilesService.activate(data.activationLink);
+  }
   @MessagePattern('get_all_profiles')
   async getAllUsers(): Promise<Profile[]> {
     return await this.profilesService.getAllProfiles();
@@ -26,7 +39,12 @@ export class ProfilesController {
 
   @MessagePattern('update_profile')
   async update(
-    @Payload() data: { id: number; dto: CreateProfileDto; avatarFileName: string },
+    @Payload()
+    data: {
+      id: number;
+      dto: CreateProfileDto;
+      avatarFileName: string;
+    },
   ): Promise<Profile> {
     return await this.profilesService.updateProfile(
       data.id,

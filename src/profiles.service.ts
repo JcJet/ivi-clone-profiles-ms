@@ -17,12 +17,12 @@ export class ProfilesService {
     @Inject(AUTH_SERVICE) private authClient: ClientProxy,
   ) {}
 
-  async registration(dto: CreateProfileDto): Promise<Profile> {
+  async registration(dto: CreateProfileDto) {
     // Создание учетных данных (User) для профиля
     const userCreateResult = await lastValueFrom(
       this.authClient.send('create_user', { dto }),
     );
-    const userId = userCreateResult.User.id;
+    const userId = userCreateResult.user.id;
 
     // Создание профиля
     const profileInsertResult = await this.profileRepository.insert({
@@ -30,13 +30,29 @@ export class ProfilesService {
       userId,
     });
     const createdProfileId = profileInsertResult.raw[0].id;
-    return this.getProfileById(createdProfileId);
+    const createdProfile = await this.getProfileById(createdProfileId);
+    return { profile: createdProfile, tokens: userCreateResult.tokens };
   }
   async getProfileById(id: number): Promise<Profile> {
     return await this.profileRepository.findOne({ where: { id } });
   }
   async login(dto: LoginDto) {
-    return await lastValueFrom(this.authClient.send('profile_login', { dto }));
+    return await lastValueFrom(this.authClient.send('login', { dto }));
+  }
+
+  async logout(refreshToken: string) {
+    return await lastValueFrom(
+      this.authClient.send('logout', { refreshToken }),
+    );
+  }
+
+  async refresh(refreshToken: string) {
+    return await lastValueFrom(
+      this.authClient.send('refresh', { refreshToken }),
+    );
+  }
+  async activate(activationLink: string) {
+    await this.authClient.send('activate', { activationLink });
   }
 
   async getAllProfiles(): Promise<Profile[]> {
