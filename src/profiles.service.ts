@@ -30,6 +30,7 @@ export class ProfilesService {
       userId,
     });
     const createdProfileId = profileInsertResult.raw[0].id;
+    //TODO: нужно ли делать еще один запрос?
     const createdProfile = await this.getProfileById(createdProfileId);
     return { profile: createdProfile, tokens: userCreateResult.tokens };
   }
@@ -85,9 +86,9 @@ export class ProfilesService {
     dto: CreateProfileDto,
     avatar: string,
   ): Promise<Profile> {
-    console.log(avatar);
     try {
       // Изменение данных профиля
+      // TODO: try Repository.update({ id }, dto);
       await this.profileRepository
         .createQueryBuilder()
         .update()
@@ -115,7 +116,6 @@ export class ProfilesService {
         where: { id },
       });
     } catch (e) {
-      throw e;
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
