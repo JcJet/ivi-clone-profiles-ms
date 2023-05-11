@@ -4,10 +4,12 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { Profile } from './profiles.entity';
 import { CreateProfileDto } from './dto/createProfile.dto';
 import { LoginDto } from './dto/login.dto';
-// TODO: ответы возвращать со статусом: {response code: 200, responseText: 'success', responseBody: {}}, ошибки все.
+
 @Controller()
 export class ProfilesController {
-  constructor(private readonly profilesService: ProfilesService) {}
+  constructor(
+    private readonly profilesService: ProfilesService,
+  ) {}
 
   @MessagePattern('registration')
   async registration(@Payload() data: { dto: CreateProfileDto }) {
@@ -32,12 +34,12 @@ export class ProfilesController {
   async activate(@Payload() data: { activationLink: string }) {
     return await this.profilesService.activate(data.activationLink);
   }
-  @MessagePattern('get_all_profiles')
+  @MessagePattern('getAllProfiles')
   async getAllUsers(): Promise<Profile[]> {
     return await this.profilesService.getAllProfiles();
   }
 
-  @MessagePattern('update_profile')
+  @MessagePattern('updateProfile')
   async update(
     @Payload()
     data: {
@@ -53,12 +55,12 @@ export class ProfilesController {
     );
   }
 
-  @MessagePattern('delete_profile')
+  @MessagePattern('deleteProfile')
   async delete(@Payload() data: { id: number }): Promise<Profile> {
     return await this.profilesService.deleteProfile(data.id);
   }
 
-  @MessagePattern('get_profile_by_id')
+  @MessagePattern('getProfileById')
   async getById(@Payload() data: { id: number }) {
     return await this.profilesService.getProfileById(data.id);
   }

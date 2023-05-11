@@ -1,17 +1,28 @@
 import { Module } from '@nestjs/common';
 import { ProfilesController } from './profiles.controller';
 import { ProfilesService } from './profiles.service';
-import { ConfigModule } from '@nestjs/config';
-import { RmqModule } from '@app/common';
-import { AUTH_SERVICE, USERS_SERVICE } from './constants/services';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Profile } from './profiles.entity';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+
+const databaseHost = process.env.POSTGRES_HOST || 'localhost';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: databaseHost,
+      port: 5432,
+      username: 'postgres',
+      password: 'my_password',
+      database: 'my_database',
+      entities: [Profile],
+      synchronize: true,
+    }),
+/*    TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.POSTGRES_HOST,
       port: Number(process.env.POSTGRES_PORT),
@@ -20,15 +31,31 @@ import { Profile } from './profiles.entity';
       database: process.env.POSTGRES_DB,
       entities: [Profile],
       synchronize: true,
-    }),
+    }),*/
     TypeOrmModule.forFeature([Profile]),
-    RmqModule.register({
+    ClientsModule.registerAsync([
+      {
+        name: 'TO_AUTH_MS',
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBIT_MQ_URI')],
+            queue: 'toAuthMs',
+            queueOptions: {
+              durable: false,
+            },
+          },
+        }),
+        inject: [ConfigService],
+      },
+    ]),
+/*    RmqModule.register({
       name: USERS_SERVICE,
     }),
     RmqModule.register({
       name: AUTH_SERVICE,
     }),
-    RmqModule,
+    RmqModule,*/
   ],
   controllers: [ProfilesController],
   providers: [ProfilesService],
