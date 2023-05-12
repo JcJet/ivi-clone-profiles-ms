@@ -49,13 +49,6 @@ const databaseHost = process.env.DB_HOST || 'localhost';
         inject: [ConfigService],
       },
     ]),
-/*    RmqModule.register({
-      name: USERS_SERVICE,
-    }),
-    RmqModule.register({
-      name: AUTH_SERVICE,
-    }),
-    RmqModule,*/
   ],
   controllers: [ProfilesController],
   providers: [ProfilesService],

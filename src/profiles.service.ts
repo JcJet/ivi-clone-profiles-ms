@@ -59,23 +59,18 @@ export class ProfilesService {
   }
 
   async deleteProfile(id: number): Promise<Profile> {
-    // TODO: check if this profile id exists
-    const profile = await this.profileRepository.findOneBy({ id });
-    const userId = profile.userId;
-    const deleteResult = await this.profileRepository.delete({ id });
-/*    const deleteResult = await this.profileRepository
-      .createQueryBuilder()
-      .delete()
-      .from(Profile)
-      .where('id = :id', { id })
-      .returning('*')
-      .execute();*/
+    try {
+      const profile = await this.profileRepository.findOneBy({ id });
+      const userId = profile.userId;
+      const deleteResult = await this.profileRepository.delete({ id });
+      if (userId) {
+        await lastValueFrom(this.toAuthProxy.send('deleteUser', { userId }));
+      }
 
-    if (userId) {
-      await lastValueFrom(this.toAuthProxy.send('deleteUser', { userId }));
+      return deleteResult.raw;
+    } catch (e) {
+      throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
-
-    return deleteResult.raw;
   }
 
   async updateProfile(
