@@ -11,57 +11,59 @@ export class ProfilesController {
     private readonly profilesService: ProfilesService,
   ) {}
 
-  @MessagePattern('registration')
-  async registration(@Payload() data: { dto: CreateProfileDto }) {
-    return await this.profilesService.registration(data.dto);
+  @MessagePattern({ cmd: 'registration' })
+  async registration(@Payload() data: { registrationDto: CreateProfileDto }) {
+    return await this.profilesService.registration(data.registrationDto);
   }
 
-  @MessagePattern('login')
-  async login(@Payload() data: { dto: LoginDto }): Promise<{ token: string }> {
-    return await this.profilesService.login(data.dto);
+  @MessagePattern({ cmd: 'login' })
+  async login(
+    @Payload() data: { loginDto: LoginDto },
+  ): Promise<{ token: string }> {
+    return await this.profilesService.login(data.loginDto);
   }
 
-  @MessagePattern('logout')
+  @MessagePattern({ cmd: 'logout' })
   async logout(@Payload() data: { refreshToken: string }) {
     return await this.profilesService.logout(data.refreshToken);
   }
-  @MessagePattern('refresh')
+  @MessagePattern({ cmd: 'refreshAccessToken' })
   async refresh(@Payload() data: { refreshToken: string }) {
     return await this.profilesService.refresh(data.refreshToken);
   }
 
-  @MessagePattern('activate')
+  @MessagePattern({ cmd: 'activate' })
   async activate(@Payload() data: { activationLink: string }) {
     return await this.profilesService.activate(data.activationLink);
   }
-  @MessagePattern('getAllProfiles')
-  async getAllUsers(): Promise<Profile[]> {
+  @MessagePattern({ cmd: 'getAllProfiles' })
+  async getAllProfiles(): Promise<Profile[]> {
     return await this.profilesService.getAllProfiles();
   }
 
-  @MessagePattern('updateProfile')
+  @MessagePattern({ cmd: 'updateProfile' })
   async update(
     @Payload()
     data: {
-      id: number;
-      dto: CreateProfileDto;
+      profileId: number;
+      updateProfileDto: CreateProfileDto;
       avatarFileName: string;
     },
   ): Promise<Profile> {
     return await this.profilesService.updateProfile(
-      data.id,
-      data.dto,
+      data.profileId,
+      data.updateProfileDto,
       data.avatarFileName,
     );
   }
 
-  @MessagePattern('deleteProfile')
-  async delete(@Payload() data: { id: number }): Promise<Profile> {
-    return await this.profilesService.deleteProfile(data.id);
+  @MessagePattern({ cmd: 'deleteProfile' })
+  async delete(@Payload() data: { profileId: number }): Promise<Profile> {
+    return await this.profilesService.deleteProfile(data.profileId);
   }
 
-  @MessagePattern('getProfileById')
-  async getById(@Payload() data: { id: number }) {
-    return await this.profilesService.getProfileById(data.id);
+  @MessagePattern({ cmd: 'getProfileById' })
+  async getById(@Payload() data: { profileId: number }) {
+    return await this.profilesService.getProfileById(data.profileId);
   }
 }

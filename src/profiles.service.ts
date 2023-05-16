@@ -18,7 +18,7 @@ export class ProfilesService {
   async registration(dto: CreateProfileDto) {
     // Создание учетных данных (User) для профиля
     const userCreateResult = await lastValueFrom(
-      this.toAuthProxy.send('createUser', { dto }),
+      this.toAuthProxy.send({ cmd: 'createUser' }, { dto }),
     );
     const userId = userCreateResult.user.id;
 
@@ -36,22 +36,22 @@ export class ProfilesService {
     return await this.profileRepository.findOne({ where: { id } });
   }
   async login(dto: LoginDto) {
-    return await lastValueFrom(this.toAuthProxy.send('login', { dto }));
+    return await lastValueFrom(this.toAuthProxy.send({ cmd: 'login' }, { dto }));
   }
 
   async logout(refreshToken: string) {
     return await lastValueFrom(
-      this.toAuthProxy.send('logout', { refreshToken }),
+      this.toAuthProxy.send({ cmd: 'logout' }, { refreshToken }),
     );
   }
 
   async refresh(refreshToken: string) {
     return await lastValueFrom(
-      this.toAuthProxy.send('refresh', { refreshToken }),
+      this.toAuthProxy.send({ cmd: 'refresh' }, { refreshToken }),
     );
   }
   async activate(activationLink: string) {
-    await this.toAuthProxy.send('activate', { activationLink });
+    await this.toAuthProxy.send({ cmd: 'activate' }, { activationLink });
   }
 
   async getAllProfiles(): Promise<Profile[]> {
@@ -64,7 +64,9 @@ export class ProfilesService {
       const userId = profile.userId;
       const deleteResult = await this.profileRepository.delete({ id });
       if (userId) {
-        await lastValueFrom(this.toAuthProxy.send('deleteUser', { userId }));
+        await lastValueFrom(
+          this.toAuthProxy.send({ cmd: 'deleteUser' }, { userId }),
+        );
       }
 
       return deleteResult.raw;
@@ -87,7 +89,7 @@ export class ProfilesService {
       const userId = profile.userId;
       if (dto.login || dto.password || dto.email) {
         await lastValueFrom(
-          this.toAuthProxy.send('updateUser', { userId, dto }),
+          this.toAuthProxy.send({ cmd: 'updateUser' }, { userId, dto }),
         );
       }
 
