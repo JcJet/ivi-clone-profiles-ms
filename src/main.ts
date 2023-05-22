@@ -17,7 +17,14 @@ async function bootstrap() {
     },
   });
 
-  await app.startAllMicroservices();
-  await app.listen(configService.get('PORT'));
+  await app.startAllMicroservices().then(() => {
+    console.log('Profiles MS started.');
+    console.log('Application variables:');
+    for (const var_name of ['RMQ_URL', 'DB_HOST']) {
+      console.log(`${var_name}: ${configService.get(var_name)}`);
+    }
+  });
+
+  //await app.listen(configService.get('PORT'));
 }
 bootstrap();

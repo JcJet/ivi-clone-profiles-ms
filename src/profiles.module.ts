@@ -6,13 +6,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Profile } from './profiles.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
-const databaseHost = process.env.DB_HOST || 'localhost';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
+      //isGlobal: true,
+      envFilePath: `.${process.env.NODE_ENV}.env`
     }),
-    TypeOrmModule.forRoot({
+/*    TypeOrmModule.forRoot({
       type: 'postgres',
       host: databaseHost,
       port: 5432,
@@ -21,17 +21,17 @@ const databaseHost = process.env.DB_HOST || 'localhost';
       database: 'profiles',
       entities: [Profile],
       synchronize: true,
-    }),
-/*    TypeOrmModule.forRoot({
+    }),*/
+    TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
       port: Number(process.env.POSTGRES_PORT),
       username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD.toString(),
+      password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
       entities: [Profile],
       synchronize: true,
-    }),*/
+    }),
     TypeOrmModule.forFeature([Profile]),
     ClientsModule.registerAsync([
       {
@@ -47,6 +47,7 @@ const databaseHost = process.env.DB_HOST || 'localhost';
           },
         }),
         inject: [ConfigService],
+        imports: [ConfigModule],
       },
     ]),
   ],
