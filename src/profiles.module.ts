@@ -12,16 +12,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       //isGlobal: true,
       envFilePath: `.${process.env.NODE_ENV}.env`
     }),
-/*    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: databaseHost,
-      port: 5432,
-      username: 'admin',
-      password: 'admin',
-      database: 'profiles',
-      entities: [Profile],
-      synchronize: true,
-    }),*/
+
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,

@@ -38,20 +38,13 @@ export class ProfilesService {
     const createdProfile = await this.getProfileById(createdProfileId);
     return { profile: createdProfile, tokens: userCreateResult.tokens };
   }
-  async getProfileById(id: number): Promise<Profile> {
-    const profileData = await this.profileRepository.findOneBy({ id }); //TODO: no result
-    if (!profileData) {
-      throw new HttpException('Профиль не найден', HttpStatus.NOT_FOUND);
-    }
 
-    return profileData;
-  }
   async login(dto: LoginDto) {
     const loginResult = await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'login' }, { dto }),
     );
     this.checkForError(loginResult);
-    return(loginResult);
+    return loginResult;
   }
 
   async logout(refreshToken: string) {
@@ -117,8 +110,14 @@ export class ProfilesService {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
-
-  async getProfileByUserId(userId: number) {
+  async getProfileById(id: number): Promise<Profile> {
+    const profileData = await this.profileRepository.findOneBy({ id }); //TODO: no result
+    if (!profileData) {
+      throw new HttpException('Профиль не найден', HttpStatus.NOT_FOUND);
+    }
+    return profileData;
+  }
+  async getProfileByUserId(userId: number): Promise<Profile> {
     const profileData = await this.profileRepository.findOneBy({ userId });
     if (!profileData) {
       throw new HttpException('Профиль не найден', HttpStatus.NOT_FOUND);
