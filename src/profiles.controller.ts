@@ -1,11 +1,13 @@
-import { Controller } from '@nestjs/common';
+import {Controller, UseFilters} from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { Profile } from './profiles.entity';
 import { CreateProfileDto } from './dto/createProfile.dto';
 import { LoginDto } from './dto/login.dto';
+import { HttpExceptionFilter } from './http-exception.filter';
 
 @Controller()
+@UseFilters(new HttpExceptionFilter())
 export class ProfilesController {
   constructor(
     private readonly profilesService: ProfilesService,
@@ -63,7 +65,11 @@ export class ProfilesController {
   }
 
   @MessagePattern({ cmd: 'getProfileById' })
-  async getById(@Payload() data: { profileId: number }) {
+  async getProfileById(@Payload() data: { profileId: number }) {
     return await this.profilesService.getProfileById(data.profileId);
+  }
+  @MessagePattern({ cmd: 'getProfileByUserId' })
+  async getProfileByUserId(@Payload() data: { userId: number }) {
+    return await this.profilesService.getProfileByUserId(data.userId);
   }
 }

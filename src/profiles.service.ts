@@ -14,12 +14,18 @@ export class ProfilesService {
     private profileRepository: Repository<Profile>,
     @Inject('TO_AUTH_MS') private toAuthProxy: ClientProxy,
   ) {}
-
+  checkForError(obj) {
+    const exception = obj.exception;
+    if (exception) {
+      throw new HttpException(exception.message, exception.statusCode);
+    }
+  }
   async registration(dto: CreateProfileDto) {
     // Создание учетных данных (User) для профиля
     const userCreateResult = await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'createUser' }, { dto }),
     );
+    this.checkForError(userCreateResult);
     const userId = userCreateResult.user.id;
 
     // Создание профиля
@@ -33,10 +39,19 @@ export class ProfilesService {
     return { profile: createdProfile, tokens: userCreateResult.tokens };
   }
   async getProfileById(id: number): Promise<Profile> {
-    return await this.profileRepository.findOne({ where: { id } });
+    const profileData = await this.profileRepository.findOneBy({ id }); //TODO: no result
+    if (!profileData) {
+      throw new HttpException('Профиль не найден', HttpStatus.NOT_FOUND);
+    }
+
+    return profileData;
   }
   async login(dto: LoginDto) {
-    return await lastValueFrom(this.toAuthProxy.send({ cmd: 'login' }, { dto }));
+    const loginResult = await lastValueFrom(
+      this.toAuthProxy.send({ cmd: 'login' }, { dto }),
+    );
+    this.checkForError(loginResult);
+    return(loginResult);
   }
 
   async logout(refreshToken: string) {
@@ -46,9 +61,11 @@ export class ProfilesService {
   }
 
   async refresh(refreshToken: string) {
-    return await lastValueFrom(
+    const refreshResult = await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'refresh' }, { refreshToken }),
     );
+    this.checkForError(refreshResult);
+    return refreshResult;
   }
   async activate(activationLink: string) {
     await this.toAuthProxy.send({ cmd: 'activate' }, { activationLink });
@@ -99,5 +116,13 @@ export class ProfilesService {
     } catch (e) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
+  }
+
+  async getProfileByUserId(userId: number) {
+    const profileData = await this.profileRepository.findOneBy({ userId });
+    if (!profileData) {
+      throw new HttpException('Профиль не найден', HttpStatus.NOT_FOUND);
+    }
+    return profileData;
   }
 }
