@@ -1,7 +1,8 @@
 import {
-  Column,
+  Column, CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 
 @Entity(`profiles`)
@@ -23,4 +24,10 @@ export class Profile {
 
   @Column({ type: 'varchar', nullable: true })
   avatar: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
