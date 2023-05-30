@@ -44,7 +44,7 @@ export class ProfilesController {
   }
 
   @MessagePattern({ cmd: 'updateProfile' })
-  async update(
+  async updateProfile(
     @Payload()
     data: {
       profileId: number;

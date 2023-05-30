@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { lastValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
 import { LoginDto } from './dto/login.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 // TODO: Pagination
 @Injectable()
 export class ProfilesService {
@@ -20,11 +21,29 @@ export class ProfilesService {
       throw new HttpException(exception.message, exception.statusCode);
     }
   }
-  async registration(dto: CreateProfileDto) {
-    // Создание учетных данных (User) для профиля
-    const userCreateResult = await lastValueFrom(
+  async createUser(dto: LoginDto) {
+    return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'createUser' }, { dto }),
     );
+  }
+
+  async updateUser(userId: number, dto: LoginDto) {
+    return await lastValueFrom(
+      this.toAuthProxy.send({ cmd: 'updateUser' }, { userId, dto }),
+    );
+  }
+
+  async deleteUser(userId: number) {
+    await lastValueFrom(
+      this.toAuthProxy.send({ cmd: 'deleteUser' }, { userId }),
+    );
+  }
+  async getRepository() {
+    return this.profileRepository;
+  }
+  async registration(dto: CreateProfileDto) {
+    // Создание учетных данных (User) для профиля
+    const userCreateResult = await this.createUser(dto);
     this.checkForError(userCreateResult);
     const userId = userCreateResult.user.id;
 
@@ -74,9 +93,7 @@ export class ProfilesService {
       const userId = profile.userId;
       const deleteResult = await this.profileRepository.delete({ id });
       if (userId) {
-        await lastValueFrom(
-          this.toAuthProxy.send({ cmd: 'deleteUser' }, { userId }),
-        );
+        await this.deleteUser(userId);
       }
 
       return deleteResult.raw;
@@ -92,15 +109,19 @@ export class ProfilesService {
   ): Promise<Profile> {
     try {
       // Изменение данных профиля
-      await this.profileRepository.update({ id }, { ...dto, avatar });
+      const updateProfileDto: UpdateProfileDto = { ...dto };
+      delete updateProfileDto['password'];
+      delete updateProfileDto['email'];
+      await this.profileRepository.update(
+        { id },
+        { ...updateProfileDto, avatar },
+      );
 
       // Изменение учетных данных (User)
       const profile = await this.profileRepository.findOneBy({ id });
       const userId = profile.userId;
-      if (dto.login || dto.password || dto.email) {
-        await lastValueFrom(
-          this.toAuthProxy.send({ cmd: 'updateUser' }, { userId, dto }),
-        );
+      if (dto.password || dto.email) {
+        await this.updateUser(userId, dto);
       }
 
       return await this.profileRepository.findOne({
