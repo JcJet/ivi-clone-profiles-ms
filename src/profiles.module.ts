@@ -43,6 +43,23 @@ import { HttpModule } from '@nestjs/axios';
         imports: [ConfigModule],
       },
     ]),
+    ClientsModule.registerAsync([
+      {
+        name: 'TO_ROLES_MS',
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RMQ_URL')],
+            queue: 'toRolesMs',
+            queueOptions: {
+              durable: false,
+            },
+          },
+        }),
+        inject: [ConfigService],
+        imports: [ConfigModule],
+      },
+    ]),
   ],
   controllers: [ProfilesController],
   providers: [ProfilesService],

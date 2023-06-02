@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  OnModuleInit,
+} from '@nestjs/common';
 import { CreateProfileDto } from './dto/createProfile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from './profiles.entity';
@@ -12,14 +18,62 @@ import process from 'process';
 import { ConfigService } from '@nestjs/config';
 // TODO: Pagination
 @Injectable()
-export class ProfilesService {
+export class ProfilesService implements OnModuleInit {
   constructor(
     @InjectRepository(Profile)
     private profileRepository: Repository<Profile>,
     @Inject('TO_AUTH_MS') private toAuthProxy: ClientProxy,
+    @Inject('TO_ROLES_MS') private toRolesProxy: ClientProxy,
     private httpService: HttpService,
     private configService: ConfigService,
   ) {}
+  // @ts-ignore
+  async onModuleInit() {
+    console.log(`The module has been initialized.`);
+    const dto: CreateProfileDto = {
+      email: 'admin@admin.com',
+      firstName: '',
+      lastName: '',
+      nickName: '',
+      password: this.configService.get('POSTGRES_PASSWORD'),
+      phone: '',
+      provider: 'local',
+      vkId: null,
+    };
+    let userId: number;
+    try {
+      const registrationResult = await this.registration(dto);
+      userId = registrationResult.profile.userId;
+      await lastValueFrom(
+        this.toRolesProxy.send(
+          { cmd: 'createRole' },
+          { dto: { value: 'ADMIN', description: 'Admin user' } },
+        ),
+      );
+    } catch (e) {
+      if (e.status != HttpStatus.CONFLICT) throw e;
+    }
+    try {
+      if (!userId) {
+        const user = await lastValueFrom(
+          this.toAuthProxy.send(
+            { cmd: 'getUser' },
+            { email: 'admin@admin.com' },
+          ),
+        );
+        userId = user.id;
+      }
+      await lastValueFrom(
+        this.toRolesProxy.send(
+          { cmd: 'addUserRoles' },
+          { dto: { userId, roles: ['ADMIN'] } },
+        ),
+      );
+    } catch (e) {
+      if (e.status != HttpStatus.CONFLICT) throw e;
+    }
+  }
+
   checkForError(obj) {
     const exception = obj.exception;
     if (exception) {

@@ -9,9 +9,7 @@ import { HttpExceptionFilter } from './http-exception.filter';
 @Controller()
 @UseFilters(new HttpExceptionFilter())
 export class ProfilesController {
-  constructor(
-    private readonly profilesService: ProfilesService,
-  ) {}
+  constructor(private readonly profilesService: ProfilesService) {}
 
   @MessagePattern({ cmd: 'registration' })
   async registration(@Payload() data: { registrationDto: CreateProfileDto }) {

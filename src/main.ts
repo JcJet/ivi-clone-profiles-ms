@@ -17,6 +17,7 @@ async function bootstrap() {
     },
   });
 
+  await app.init();
   await app.startAllMicroservices().then(() => {
     console.log('Profiles MS started.');
     console.log('Application variables:');

@@ -92,6 +92,7 @@ describe('comments Controller', () => {
   describe('profiles CRUD', () => {
     it('create new profile with correct properties', async () => {
       const createProfileDto: CreateProfileDto = {
+        nickName: 'test_nickname',
         firstName: 'test_firstname',
         lastName: 'test_lastname',
         phone: 'test_phone',
@@ -113,6 +114,7 @@ describe('comments Controller', () => {
     });
     it('update profile', async () => {
       const createProfileDto: CreateProfileDto = {
+        nickName: 'test_nickname',
         firstName: 'test_firstname',
         lastName: 'test_lastname',
         phone: 'test_phone',
@@ -127,6 +129,7 @@ describe('comments Controller', () => {
       const profileId = registrationResult.profile.id;
 
       const updateProfileDto: CreateProfileDto = {
+        nickName: 'test_nickname',
         firstName: 'updated_firstname',
         lastName: 'updated_lastname',
         phone: 'updated_phone',
@@ -148,6 +151,7 @@ describe('comments Controller', () => {
     });
     it('delete profile', async () => {
       const createProfileDto: CreateProfileDto = {
+        nickName: 'test_nickname',
         firstName: 'test_firstname',
         lastName: 'test_lastname',
         phone: 'test_phone',
@@ -167,6 +171,7 @@ describe('comments Controller', () => {
     });
     it('get profile by id', async () => {
       const createProfileDto: CreateProfileDto = {
+        nickName: 'test_nickname',
         firstName: 'test_firstname',
         lastName: 'test_lastname',
         phone: 'test_phone',
