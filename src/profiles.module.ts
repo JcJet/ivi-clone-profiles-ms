@@ -5,7 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Profile } from './profiles.entity';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import {HttpModule} from "@nestjs/axios";
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [

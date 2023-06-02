@@ -139,6 +139,7 @@ export class ProfilesService {
     }
   }
   async getProfileById(id: number): Promise<Profile> {
+    console.log(id);
     const profileData = await this.profileRepository.findOneBy({ id }); //TODO: no result
     if (!profileData) {
       throw new HttpException('Профиль не найден', HttpStatus.NOT_FOUND);
@@ -159,7 +160,6 @@ export class ProfilesService {
     try {
       authData = await this.getVkToken(code);
     } catch (e) {
-      throw e;
       throw new HttpException('Неверный код VK', HttpStatus.UNAUTHORIZED);
     }
 
@@ -177,7 +177,6 @@ export class ProfilesService {
         provider: 'VK',
       });
     }
-    console.log(authData);
     try {
       const { data } = await this.getUserDataFromVk(
         authData.data.user_id,
@@ -189,19 +188,18 @@ export class ProfilesService {
       const createProfileDto: CreateProfileDto = {
         vkId: authData.data.user_id,
         email: authData.data.email,
-        password: null,
+        password: '',
         firstName: profileVk.first_name,
         lastName: profileVk.last_name,
         provider: 'VK',
         phone: '',
         nickName: profileVk.first_name,
       };
-
+      console.log(authData.data);
       await this.registration(createProfileDto);
 
       return this.login(createProfileDto);
     } catch (e) {
-      throw e;
       throw new HttpException(
         'Ошибка при обращении к VK',
         HttpStatus.INTERNAL_SERVER_ERROR,
