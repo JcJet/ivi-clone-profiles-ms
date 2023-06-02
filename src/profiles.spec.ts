@@ -56,8 +56,7 @@ describe('comments Controller', () => {
     await app.init();
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    jest.spyOn(service, 'deleteUser').mockImplementation(async () => {
-    });
+    jest.spyOn(service, 'deleteUser').mockImplementation(async () => {});
 
     jest.spyOn(service, 'createUser').mockImplementation(async () => {
       return {
@@ -98,6 +97,8 @@ describe('comments Controller', () => {
         phone: 'test_phone',
         password: 'test_password',
         email: 'test_email@mail.com',
+        vkId: null,
+        provider: 'local',
       };
 
       const registrationResult = await controller.registration({
@@ -117,6 +118,8 @@ describe('comments Controller', () => {
         phone: 'test_phone',
         password: 'test_password',
         email: 'test_email2@mail.com',
+        vkId: null,
+        provider: 'local',
       };
       const registrationResult = await controller.registration({
         registrationDto: createProfileDto,
@@ -129,6 +132,8 @@ describe('comments Controller', () => {
         phone: 'updated_phone',
         password: 'test_password',
         email: 'test_email2@mail.com',
+        vkId: null,
+        provider: 'local',
       };
       await controller.updateProfile({
         profileId,
@@ -148,6 +153,8 @@ describe('comments Controller', () => {
         phone: 'test_phone',
         password: 'test_password',
         email: 'test4_email2@mail.com',
+        vkId: null,
+        provider: 'local',
       };
       const registrationResult = await controller.registration({
         registrationDto: createProfileDto,
@@ -165,13 +172,15 @@ describe('comments Controller', () => {
         phone: 'test_phone',
         password: 'test_password',
         email: 'test5_email2@mail.com',
+        vkId: null,
+        provider: 'local',
       };
       const registrationResult = await controller.registration({
         registrationDto: createProfileDto,
       });
       const profileId = registrationResult.profile.id;
 
-      const profileFromDb = await controller.getProfileById({profileId});
+      const profileFromDb = await controller.getProfileById({ profileId });
       expect(profileFromDb.userId).toBeDefined();
       expect(profileFromDb.firstName).toEqual(createProfileDto.firstName);
       expect(profileFromDb.lastName).toEqual(createProfileDto.lastName);

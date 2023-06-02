@@ -11,6 +11,9 @@ export class Profile {
   id: number;
 
   @Column({ type: 'varchar', nullable: true })
+  nickName: string;
+
+  @Column({ type: 'varchar', nullable: true })
   firstName: string;
 
   @Column({ type: 'varchar', nullable: true })

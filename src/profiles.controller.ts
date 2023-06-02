@@ -72,4 +72,8 @@ export class ProfilesController {
   async getProfileByUserId(@Payload() data: { userId: number }) {
     return await this.profilesService.getProfileByUserId(data.userId);
   }
+  @MessagePattern({ cmd: 'loginVk' })
+  async loginVk(@Payload() data: { code: string }) {
+    return this.profilesService.loginVk(data.code);
+  }
 }

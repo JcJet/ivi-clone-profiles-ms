@@ -1,4 +1,6 @@
 export class CreateProfileDto {
+  readonly nickName: string;
+
   readonly firstName: string;
 
   readonly lastName: string;
@@ -8,4 +10,8 @@ export class CreateProfileDto {
   readonly password: string;
 
   readonly email: string;
+
+  readonly provider: string;
+
+  readonly vkId: number;
 }
