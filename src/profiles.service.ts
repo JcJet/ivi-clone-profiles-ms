@@ -14,9 +14,7 @@ import { ClientProxy } from '@nestjs/microservices';
 import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { HttpService } from '@nestjs/axios';
-import process from 'process';
 import { ConfigService } from '@nestjs/config';
-// TODO: Pagination
 @Injectable()
 export class ProfilesService implements OnModuleInit {
   constructor(
@@ -27,7 +25,7 @@ export class ProfilesService implements OnModuleInit {
     private httpService: HttpService,
     private configService: ConfigService,
   ) {}
-  // @ts-ignore
+  //TODO: catch the particular exception
   async onModuleInit() {
     console.log(`The module has been initialized.`);
     const dto: CreateProfileDto = {
@@ -50,9 +48,7 @@ export class ProfilesService implements OnModuleInit {
           { dto: { value: 'ADMIN', description: 'Admin user' } },
         ),
       );
-    } catch (e) {
-      if (e.status != HttpStatus.CONFLICT) throw e;
-    }
+    } catch (e) {}
     try {
       if (!userId) {
         const user = await lastValueFrom(
@@ -69,9 +65,7 @@ export class ProfilesService implements OnModuleInit {
           { dto: { userId, roles: ['ADMIN'] } },
         ),
       );
-    } catch (e) {
-      if (e.status != HttpStatus.CONFLICT) throw e;
-    }
+    } catch (e) {}
   }
 
   checkForError(obj) {
