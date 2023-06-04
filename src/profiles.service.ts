@@ -183,7 +183,6 @@ export class ProfilesService implements OnModuleInit {
         where: { id },
       });
     } catch (e) {
-      throw e;
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
