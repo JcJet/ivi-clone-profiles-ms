@@ -82,7 +82,7 @@ export class ProfilesService implements OnModuleInit {
 
   async updateUser(userId: number, dto: LoginDto) {
     return await lastValueFrom(
-      this.toAuthProxy.send({ cmd: 'updateUser' }, { userId, dto }),
+      this.toAuthProxy.send({ cmd: 'updateUser' }, { id: userId, dto }),
     );
   }
 
@@ -183,6 +183,7 @@ export class ProfilesService implements OnModuleInit {
         where: { id },
       });
     } catch (e) {
+      throw e;
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
