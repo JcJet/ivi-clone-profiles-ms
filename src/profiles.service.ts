@@ -260,7 +260,7 @@ export class ProfilesService implements OnModuleInit {
       client_secret: this.configService.get('VK_SECRET'),
     };
     const redirectUri =
-      this.configService.get('API_URL') + '/profile/vk_redirect/';
+      this.configService.get('API_URL') + '/oauth/vk_redirect/';
     const link = `https://oauth.vk.com/access_token?client_id=${vkData.client_id}&client_secret=${vkData.client_secret}&redirect_uri=${redirectUri}&code=${code}`;
     return await lastValueFrom(this.httpService.get(link));
   }
