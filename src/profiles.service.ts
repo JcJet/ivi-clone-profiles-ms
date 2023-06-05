@@ -15,6 +15,7 @@ import { LoginDto } from './dto/login.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
+import { logCall } from './decorators/logging-decorator';
 @Injectable()
 export class ProfilesService implements OnModuleInit {
   constructor(
@@ -67,33 +68,36 @@ export class ProfilesService implements OnModuleInit {
       );
     } catch (e) {}
   }
-
+  @logCall()
   checkForError(obj) {
     const exception = obj.exception;
     if (exception) {
       throw new HttpException(exception.message, exception.statusCode);
     }
   }
+  @logCall()
   async createUser(dto: LoginDto) {
     return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'createUser' }, { dto }),
     );
   }
-
+  @logCall()
   async updateUser(userId: number, dto: LoginDto) {
     return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'updateUser' }, { id: userId, dto }),
     );
   }
-
+  @logCall()
   async deleteUser(userId: number) {
     await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'deleteUser' }, { userId }),
     );
   }
+  @logCall()
   async getRepository() {
     return this.profileRepository;
   }
+  @logCall()
   async registration(dto: CreateProfileDto) {
     // Создание учетных данных (User) для профиля
     const userCreateResult = await this.createUser(dto);
@@ -112,7 +116,7 @@ export class ProfilesService implements OnModuleInit {
     const createdProfile = await this.getProfileById(createdProfileId);
     return { profile: createdProfile, tokens: userCreateResult.tokens };
   }
-
+  @logCall()
   async login(dto: LoginDto) {
     const loginResult = await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'login' }, { dto }),
@@ -120,13 +124,13 @@ export class ProfilesService implements OnModuleInit {
     this.checkForError(loginResult);
     return loginResult;
   }
-
+  @logCall()
   async logout(refreshToken: string) {
     return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'logout' }, { refreshToken }),
     );
   }
-
+  @logCall()
   async refresh(refreshToken: string) {
     const refreshResult = await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'refresh' }, { refreshToken }),
@@ -134,14 +138,15 @@ export class ProfilesService implements OnModuleInit {
     this.checkForError(refreshResult);
     return refreshResult;
   }
+  @logCall()
   async activate(activationLink: string) {
     await this.toAuthProxy.send({ cmd: 'activate' }, { activationLink });
   }
-
+  @logCall()
   async getAllProfiles(): Promise<Profile[]> {
     return await this.profileRepository.find();
   }
-
+  @logCall()
   async deleteProfile(id: number): Promise<Profile> {
     try {
       const profile = await this.profileRepository.findOneBy({ id });
@@ -156,7 +161,7 @@ export class ProfilesService implements OnModuleInit {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
-
+  @logCall()
   async updateProfile(
     id: number,
     dto: CreateProfileDto,
@@ -186,6 +191,7 @@ export class ProfilesService implements OnModuleInit {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
+  @logCall()
   async getProfileById(id: number): Promise<Profile> {
     console.log(id);
     const profileData = await this.profileRepository.findOneBy({ id }); //TODO: no result
@@ -194,6 +200,7 @@ export class ProfilesService implements OnModuleInit {
     }
     return profileData;
   }
+  @logCall()
   async getProfileByUserId(userId: number): Promise<Profile> {
     const profileData = await this.profileRepository.findOneBy({ userId });
     if (!profileData) {
@@ -201,7 +208,7 @@ export class ProfilesService implements OnModuleInit {
     }
     return profileData;
   }
-
+  @logCall()
   async loginVk(code: string) {
     let authData;
     console.log(code);
@@ -254,6 +261,7 @@ export class ProfilesService implements OnModuleInit {
       );
     }
   }
+  @logCall()
   async getVkToken(code: string): Promise<any> {
     const vkData = {
       client_id: this.configService.get('VK_APP_ID'),
@@ -264,6 +272,7 @@ export class ProfilesService implements OnModuleInit {
     const link = `https://oauth.vk.com/access_token?client_id=${vkData.client_id}&client_secret=${vkData.client_secret}&redirect_uri=${redirectUri}&code=${code}`;
     return await lastValueFrom(this.httpService.get(link));
   }
+  @logCall()
   async getUserDataFromVk(userId: string, token: string): Promise<any> {
     return await lastValueFrom(
       this.httpService.get(
