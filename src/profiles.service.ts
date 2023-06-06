@@ -8,7 +8,7 @@ import {
 import { CreateProfileDto } from './dto/createProfile.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from './profiles.entity';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository, UpdateResult } from 'typeorm';
 import { lastValueFrom } from 'rxjs';
 import { ClientProxy } from '@nestjs/microservices';
 import { LoginDto } from './dto/login.dto';
@@ -16,6 +16,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { logCall } from './decorators/logging-decorator';
+import { CreateUserResultDto } from './dto/create-user-result.dto';
 @Injectable()
 export class ProfilesService implements OnModuleInit {
   constructor(
@@ -26,7 +27,7 @@ export class ProfilesService implements OnModuleInit {
     private httpService: HttpService,
     private configService: ConfigService,
   ) {}
-  //TODO: catch the particular exception
+
   async onModuleInit() {
     console.log(`The module has been initialized.`);
     const dto: CreateProfileDto = {
@@ -76,34 +77,37 @@ export class ProfilesService implements OnModuleInit {
     }
   }
   @logCall()
-  async createUser(dto: LoginDto) {
+  async createUser(dto: LoginDto): Promise<CreateUserResultDto> {
     return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'createUser' }, { dto }),
     );
   }
   @logCall()
-  async updateUser(userId: number, dto: LoginDto) {
+  async updateUser(userId: number, dto: LoginDto): Promise<UpdateResult> {
     return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'updateUser' }, { id: userId, dto }),
     );
   }
   @logCall()
-  async deleteUser(userId: number) {
-    await lastValueFrom(
+  async deleteUser(userId: number): Promise<DeleteResult> {
+    return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'deleteUser' }, { userId }),
     );
   }
   @logCall()
-  async getRepository() {
+  async getRepository(): Promise<Repository<Profile>> {
     return this.profileRepository;
   }
   @logCall()
-  async registration(dto: CreateProfileDto) {
+  async registration(dto: CreateProfileDto): Promise<{
+    profile: Profile;
+    tokens: { accessToken: string; refreshToken: string };
+  }> {
     // Создание учетных данных (User) для профиля
-    const userCreateResult = await this.createUser(dto);
+    const userCreateResult: CreateUserResultDto = await this.createUser(dto);
     this.checkForError(userCreateResult);
-    const userId = userCreateResult.user.id;
-    const nickName = dto.nickName || dto.email.split('@')[0];
+    const userId: number = userCreateResult.user.id;
+    const nickName: string = dto.nickName || dto.email.split('@')[0];
 
     // Создание профиля
     const profileInsertResult = await this.profileRepository.insert({
@@ -113,11 +117,11 @@ export class ProfilesService implements OnModuleInit {
     });
     const createdProfileId = profileInsertResult.raw[0].id;
     //TODO: нужно ли делать еще один запрос?
-    const createdProfile = await this.getProfileById(createdProfileId);
+    const createdProfile: Profile = await this.getProfileById(createdProfileId);
     return { profile: createdProfile, tokens: userCreateResult.tokens };
   }
   @logCall()
-  async login(dto: LoginDto) {
+  async login(dto: LoginDto): Promise<CreateUserResultDto> {
     const loginResult = await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'login' }, { dto }),
     );
@@ -125,13 +129,13 @@ export class ProfilesService implements OnModuleInit {
     return loginResult;
   }
   @logCall()
-  async logout(refreshToken: string) {
+  async logout(refreshToken: string): Promise<DeleteResult> {
     return await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'logout' }, { refreshToken }),
     );
   }
   @logCall()
-  async refresh(refreshToken: string) {
+  async refresh(refreshToken: string): Promise<CreateUserResultDto> {
     const refreshResult = await lastValueFrom(
       this.toAuthProxy.send({ cmd: 'refresh' }, { refreshToken }),
     );
@@ -139,7 +143,7 @@ export class ProfilesService implements OnModuleInit {
     return refreshResult;
   }
   @logCall()
-  async activate(activationLink: string) {
+  async activate(activationLink: string): Promise<void> {
     await this.toAuthProxy.send({ cmd: 'activate' }, { activationLink });
   }
   @logCall()
@@ -147,16 +151,16 @@ export class ProfilesService implements OnModuleInit {
     return await this.profileRepository.find();
   }
   @logCall()
-  async deleteProfile(id: number): Promise<Profile> {
+  async deleteProfile(id: number): Promise<DeleteResult> {
     try {
-      const profile = await this.profileRepository.findOneBy({ id });
-      const userId = profile.userId;
+      const profile: Profile = await this.profileRepository.findOneBy({ id });
+      const userId: number = profile.userId;
       const deleteResult = await this.profileRepository.delete({ id });
       if (userId) {
         await this.deleteUser(userId);
       }
 
-      return deleteResult.raw;
+      return deleteResult;
     } catch (e) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
@@ -166,13 +170,13 @@ export class ProfilesService implements OnModuleInit {
     id: number,
     dto: CreateProfileDto,
     avatar: string,
-  ): Promise<Profile> {
+  ): Promise<UpdateResult> {
     try {
       // Изменение данных профиля
       const updateProfileDto: UpdateProfileDto = { ...dto };
       delete updateProfileDto['password'];
       delete updateProfileDto['email'];
-      await this.profileRepository.update(
+      const profileUpdateResult = await this.profileRepository.update(
         { id },
         { ...updateProfileDto, avatar },
       );
@@ -184,9 +188,7 @@ export class ProfilesService implements OnModuleInit {
         await this.updateUser(userId, dto);
       }
 
-      return await this.profileRepository.findOne({
-        where: { id },
-      });
+      return profileUpdateResult;
     } catch (e) {
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
@@ -209,7 +211,7 @@ export class ProfilesService implements OnModuleInit {
     return profileData;
   }
   @logCall()
-  async loginVk(code: string) {
+  async loginVk(code: string): Promise<CreateUserResultDto> {
     let authData;
     console.log(code);
     try {
@@ -250,7 +252,7 @@ export class ProfilesService implements OnModuleInit {
         phone: '',
         nickName: profileVk.first_name,
       };
-      console.log(authData.data);
+
       await this.registration(createProfileDto);
 
       return this.login(createProfileDto);
@@ -267,16 +269,21 @@ export class ProfilesService implements OnModuleInit {
       client_id: this.configService.get('VK_APP_ID'),
       client_secret: this.configService.get('VK_SECRET'),
     };
+
     const redirectUri =
       this.configService.get('API_URL') + '/oauth/vk_redirect/';
-    const link = `https://oauth.vk.com/access_token?client_id=${vkData.client_id}&client_secret=${vkData.client_secret}&redirect_uri=${redirectUri}&code=${code}`;
+    const link =
+      `https://oauth.vk.com/access_token?client_id=${vkData.client_id}` +
+      `&client_secret=${vkData.client_secret}` +
+      `&redirect_uri=${redirectUri}&code=${code}`;
     return await lastValueFrom(this.httpService.get(link));
   }
   @logCall()
   async getUserDataFromVk(userId: string, token: string): Promise<any> {
     return await lastValueFrom(
       this.httpService.get(
-        `https://api.vk.com/method/users.get?user_ids=${userId}&fields=photo_400,has_mobile,home_town,contacts,mobile_phone&access_token=${token}&v=5.120`,
+        `https://api.vk.com/method/users.get?user_ids=${userId}` +
+          `&fields=photo_400,has_mobile,home_town,contacts,mobile_phone&access_token=${token}&v=5.120`,
       ),
     );
   }
