@@ -6,7 +6,7 @@ import { CreateProfileDto } from './dto/createProfile.dto';
 import { LoginDto } from './dto/login.dto';
 import { HttpExceptionFilter } from './http-exception.filter';
 import { CreateUserResultDto } from './dto/create-user-result.dto';
-import {DeleteResult, UpdateResult} from "typeorm";
+import { DeleteResult, UpdateResult } from 'typeorm';
 
 @Controller()
 @UseFilters(new HttpExceptionFilter())
@@ -18,7 +18,8 @@ export class ProfilesController {
     @Payload() data: { registrationDto: CreateProfileDto },
   ): Promise<{
     profile: Profile;
-    tokens: { accessToken: string; refreshToken: string };
+    accessToken: string;
+    refreshToken: string;
   }> {
     return await this.profilesService.registration(data.registrationDto);
   }
@@ -31,7 +32,9 @@ export class ProfilesController {
   }
 
   @MessagePattern({ cmd: 'logout' })
-  async logout(@Payload() data: { refreshToken: string }): Promise<DeleteResult> {
+  async logout(
+    @Payload() data: { refreshToken: string },
+  ): Promise<DeleteResult> {
     return await this.profilesService.logout(data.refreshToken);
   }
   @MessagePattern({ cmd: 'refreshAccessToken' })
@@ -72,15 +75,21 @@ export class ProfilesController {
   }
 
   @MessagePattern({ cmd: 'getProfileById' })
-  async getProfileById(@Payload() data: { profileId: number }): Promise<Profile> {
+  async getProfileById(
+    @Payload() data: { profileId: number },
+  ): Promise<Profile> {
     return await this.profilesService.getProfileById(data.profileId);
   }
   @MessagePattern({ cmd: 'getProfileByUserId' })
-  async getProfileByUserId(@Payload() data: { userId: number }): Promise<Profile> {
+  async getProfileByUserId(
+    @Payload() data: { userId: number },
+  ): Promise<Profile> {
     return await this.profilesService.getProfileByUserId(data.userId);
   }
   @MessagePattern({ cmd: 'loginVk' })
-  async loginVk(@Payload() data: { code: string }): Promise<CreateUserResultDto> {
+  async loginVk(
+    @Payload() data: { code: string },
+  ): Promise<CreateUserResultDto> {
     return this.profilesService.loginVk(data.code);
   }
 }

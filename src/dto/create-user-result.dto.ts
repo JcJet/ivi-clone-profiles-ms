@@ -8,5 +8,6 @@ export class CreateUserResultDto {
     vkId: number;
     oauthProviders: any[];
   };
-  tokens: { accessToken: string; refreshToken: string };
+  accessToken: string;
+  refreshToken: string;
 }

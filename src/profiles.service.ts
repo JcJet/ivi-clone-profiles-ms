@@ -101,7 +101,8 @@ export class ProfilesService implements OnModuleInit {
   @logCall()
   async registration(dto: CreateProfileDto): Promise<{
     profile: Profile;
-    tokens: { accessToken: string; refreshToken: string };
+    accessToken: string;
+    refreshToken: string;
   }> {
     // Создание учетных данных (User) для профиля
     const userCreateResult: CreateUserResultDto = await this.createUser(dto);
@@ -118,7 +119,11 @@ export class ProfilesService implements OnModuleInit {
     const createdProfileId = profileInsertResult.raw[0].id;
     //TODO: нужно ли делать еще один запрос?
     const createdProfile: Profile = await this.getProfileById(createdProfileId);
-    return { profile: createdProfile, tokens: userCreateResult.tokens };
+    return {
+      profile: createdProfile,
+      accessToken: userCreateResult.accessToken,
+      refreshToken: userCreateResult.refreshToken,
+    };
   }
   @logCall()
   async login(dto: LoginDto): Promise<CreateUserResultDto> {
@@ -195,7 +200,6 @@ export class ProfilesService implements OnModuleInit {
   }
   @logCall()
   async getProfileById(id: number): Promise<Profile> {
-    console.log(id);
     const profileData = await this.profileRepository.findOneBy({ id }); //TODO: no result
     if (!profileData) {
       throw new HttpException('Профиль не найден', HttpStatus.NOT_FOUND);

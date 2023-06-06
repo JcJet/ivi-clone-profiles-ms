@@ -8,6 +8,7 @@ import { TypeORMTestingModule } from './test-utils/TypeORMTestingModule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { CreateProfileDto } from './dto/createProfile.dto';
+import { DeleteResult, UpdateResult } from 'typeorm';
 
 describe('comments Controller', () => {
   let controller: ProfilesController;
@@ -56,14 +57,20 @@ describe('comments Controller', () => {
     await app.init();
 
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    jest.spyOn(service, 'deleteUser').mockImplementation(async () => {});
-
+    jest.spyOn(service, 'deleteUser').mockImplementation(async () => {
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
+      return new Promise<DeleteResult>(() => {});
+    });
     jest.spyOn(service, 'createUser').mockImplementation(async () => {
       return {
         user: {
           id: 1,
           isActivated: false,
           activationLink: '82b72f42-60a3-4aee-b6fa-01f54bad01d0',
+          password: '',
+          vkId: 0,
+          email: '',
+          oauthProviders: [],
         },
         tokens: {
           accessToken:
@@ -73,20 +80,9 @@ describe('comments Controller', () => {
         },
       };
     });
+
     jest.spyOn(service, 'updateUser').mockImplementation(async () => {
-      return {
-        user: {
-          id: 1,
-          isActivated: false,
-          activationLink: '82b72f42-60a3-4aee-b6fa-01f54bad01d0',
-        },
-        tokens: {
-          accessToken:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGVzIjpbXSwiaWF0IjoxNjg1NDgwOTM4LCJleHAiOjE2ODU0ODA5NTN9.VRNK2Oc8P8mFvlrm3sIBQnnwXKDxI90kiPlK8M-KPOE',
-          refreshToken:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGVzIjpbXSwiaWF0IjoxNjg1NDgwOTM4LCJleHAiOjE2ODU0ODA5Njh9.6OLXKQbebGHcoXJkuJe__wKE9l7C-U6QSIlv8ryLYhg',
-        },
-      };
+      return new Promise<UpdateResult>(() => {});
     });
   });
   describe('profiles CRUD', () => {
