@@ -74,10 +74,8 @@ describe('profiles Controller', () => {
     await connection.synchronize(true);
     await app.init();
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
     jest.spyOn(service, 'deleteUser').mockImplementation(async () => {
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      return new DeleteResult() // Promise<DeleteResult>(() => {});
+      return new DeleteResult();
     });
     jest.spyOn(service, 'createUser').mockImplementation(async () => {
       return {
@@ -99,7 +97,7 @@ describe('profiles Controller', () => {
     });
 
     jest.spyOn(service, 'updateUser').mockImplementation(async () => {
-      return new UpdateResult(); // Promise<UpdateResult>(() => {});
+      return new UpdateResult();
     });
   });
   describe('profiles CRUD', () => {

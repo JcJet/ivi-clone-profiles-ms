@@ -116,8 +116,8 @@ export class ProfilesService implements OnModuleInit {
       userId,
       nickName,
     });
+
     const createdProfileId = profileInsertResult.raw[0].id;
-    //TODO: нужно ли делать еще один запрос?
     const createdProfile: Profile = await this.getProfileById(createdProfileId);
     return {
       profile: createdProfile,
@@ -179,11 +179,6 @@ export class ProfilesService implements OnModuleInit {
     try {
       // Изменение данных профиля
       const updateProfileDto: UpdateProfileDto = new UpdateProfileDto(dto);
-      //delete updateProfileDto['password'];
-      //delete updateProfileDto['email'];
-      //delete updateProfileDto['vkId'];
-      //delete updateProfileDto['provider'];
-      console.log(updateProfileDto);
       const profileUpdateResult = await this.profileRepository.update(
         { id },
         { ...updateProfileDto, avatar },
