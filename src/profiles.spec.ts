@@ -9,8 +9,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { CreateProfileDto } from './dto/createProfile.dto';
 import { DeleteResult, UpdateResult } from 'typeorm';
+import { HttpModule } from '@nestjs/axios';
 
-describe('comments Controller', () => {
+describe('profiles Controller', () => {
   let controller: ProfilesController;
   let service: ProfilesService;
   let repository: Repository<Profile>;
@@ -18,13 +19,30 @@ describe('comments Controller', () => {
   beforeAll(async () => {
     const profilesModule: TestingModule = await Test.createTestingModule({
       imports: [
+        HttpModule,
         ConfigModule.forRoot({
           envFilePath: `.${process.env.NODE_ENV}.env`,
         }),
 
         TypeORMTestingModule([Profile]),
         TypeOrmModule.forFeature([Profile]),
-
+        ClientsModule.registerAsync([
+          {
+            name: 'TO_ROLES_MS',
+            useFactory: (configService: ConfigService) => ({
+              transport: Transport.RMQ,
+              options: {
+                urls: [configService.get<string>('RMQ_URL')],
+                queue: 'toRolesMs',
+                queueOptions: {
+                  durable: false,
+                },
+              },
+            }),
+            inject: [ConfigService],
+            imports: [ConfigModule],
+          },
+        ]),
         ClientsModule.registerAsync([
           {
             name: 'TO_AUTH_MS',
@@ -59,7 +77,7 @@ describe('comments Controller', () => {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     jest.spyOn(service, 'deleteUser').mockImplementation(async () => {
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      return new Promise<DeleteResult>(() => {});
+      return new DeleteResult() // Promise<DeleteResult>(() => {});
     });
     jest.spyOn(service, 'createUser').mockImplementation(async () => {
       return {
@@ -72,17 +90,16 @@ describe('comments Controller', () => {
           email: '',
           oauthProviders: [],
         },
-        tokens: {
-          accessToken:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGVzIjpbXSwiaWF0IjoxNjg1NDgwOTM4LCJleHAiOjE2ODU0ODA5NTN9.VRNK2Oc8P8mFvlrm3sIBQnnwXKDxI90kiPlK8M-KPOE',
-          refreshToken:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGVzIjpbXSwiaWF0IjoxNjg1NDgwOTM4LCJleHAiOjE2ODU0ODA5Njh9.6OLXKQbebGHcoXJkuJe__wKE9l7C-U6QSIlv8ryLYhg',
-        },
+
+        accessToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGVzIjpbXSwiaWF0IjoxNjg1NDgwOTM4LCJleHAiOjE2ODU0ODA5NTN9.VRNK2Oc8P8mFvlrm3sIBQnnwXKDxI90kiPlK8M-KPOE',
+        refreshToken:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGVzIjpbXSwiaWF0IjoxNjg1NDgwOTM4LCJleHAiOjE2ODU0ODA5Njh9.6OLXKQbebGHcoXJkuJe__wKE9l7C-U6QSIlv8ryLYhg',
       };
     });
 
     jest.spyOn(service, 'updateUser').mockImplementation(async () => {
-      return new Promise<UpdateResult>(() => {});
+      return new UpdateResult(); // Promise<UpdateResult>(() => {});
     });
   });
   describe('profiles CRUD', () => {

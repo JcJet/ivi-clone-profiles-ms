@@ -178,9 +178,12 @@ export class ProfilesService implements OnModuleInit {
   ): Promise<UpdateResult> {
     try {
       // Изменение данных профиля
-      const updateProfileDto: UpdateProfileDto = { ...dto };
-      delete updateProfileDto['password'];
-      delete updateProfileDto['email'];
+      const updateProfileDto: UpdateProfileDto = new UpdateProfileDto(dto);
+      //delete updateProfileDto['password'];
+      //delete updateProfileDto['email'];
+      //delete updateProfileDto['vkId'];
+      //delete updateProfileDto['provider'];
+      console.log(updateProfileDto);
       const profileUpdateResult = await this.profileRepository.update(
         { id },
         { ...updateProfileDto, avatar },
@@ -195,6 +198,7 @@ export class ProfilesService implements OnModuleInit {
 
       return profileUpdateResult;
     } catch (e) {
+      throw e;
       throw new HttpException('Пользователь не найден', HttpStatus.NOT_FOUND);
     }
   }
