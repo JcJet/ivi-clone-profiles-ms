@@ -56,7 +56,7 @@ API_URL=http://193.32.203.137:4000
 API URL should be an ***external*** address of API Gateway. It's required for oauth features to work.
 
 ## Test
-
+Create database 'profiles_tests' in Postgres. The database credentials from .dev.env file will be used.
 ```bash
 # unit tests
 $ npm run test
